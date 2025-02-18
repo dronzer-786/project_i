@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { InputOTPGroup, InputOTP, InputOTPSlot } from "../ui/input-otp";
 import bcrypt from "bcryptjs";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
   const [value, setValue] = React.useState("");
   const [isVerifying, setIsVerifying] = React.useState(false);
 
+
   const verifyOTP = async (inputValue: string) => {
     try {
       if (
@@ -20,10 +21,6 @@ function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
       ) {
         throw new Error("Missing environment variables");
       }
-      console.log(
-        process.env.NEXT_PUBLIC_HASHED_PASSWORD,
-        process.env.NEXT_PUBLIC_PEPPER
-      );
 
       setIsVerifying(true);
       const loadingToast = toast.loading("Checking access code...", {
@@ -65,7 +62,7 @@ function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
       verifyOTP(value);
     }
   }, [value]);
-
+  if (!isLocked) return null;
   return (
     <main className="min-h-screen w-full flex items-center justify-center">
       <div className="w-full max-w-3xl px-4">

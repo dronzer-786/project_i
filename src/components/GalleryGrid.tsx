@@ -1,10 +1,10 @@
-import type { GalleryItem } from "@/types/gallery"
-import Image from "next/image"
+
+
 import { FileDataTypes } from "../../types/gallery"
 
 interface GalleryGridProps {
   items: FileDataTypes[]
-  onItemClick: (item: GalleryItem) => void
+  onItemClick: (item: FileDataTypes) => void
 }
 
 export default function GalleryGrid({ items, onItemClick }: GalleryGridProps) {

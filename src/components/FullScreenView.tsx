@@ -1,21 +1,21 @@
-import type { GalleryItem } from "@/types/gallery"
-import Image from "next/image"
-import VideoPlayer from "./VideoPlayer"
+
+import VideoPlayer from "./VideoPlayer";
+import { FileDataTypes } from "../../types/gallery";
 
 interface FullScreenViewProps {
-  item: GalleryItem
-  onClose: () => void
+  item: FileDataTypes;
+  onClose: () => void;
 }
 
 export default function FullScreenView({ item, onClose }: FullScreenViewProps) {
   const handleDownload = () => {
-    const link = document.createElement("a")
-    link.href = item.src
-    link.download = item.name
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = item.url;
+    link.download = item.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -28,10 +28,16 @@ export default function FullScreenView({ item, onClose }: FullScreenViewProps) {
             </button>
           </div>
           <div className="relative aspect-video">
-            {item.type === "image" ? (
-              <Image src={item.src || "/placeholder.svg"} alt={item.name} fill className="object-contain" />
+            {item.name.includes(".png") ||
+            item.name.includes(".jpg") ||
+            item.name.includes(".jpeg") ? (
+              <img
+                src={item.url || "/placeholder.svg"}
+                alt={item.name}
+                className="w-full h-full object-contain"
+              />
             ) : (
-              <VideoPlayer src={item.src} />
+              <VideoPlayer src={item.url} />
             )}
           </div>
           <div className="p-4">
@@ -45,6 +51,5 @@ export default function FullScreenView({ item, onClose }: FullScreenViewProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
