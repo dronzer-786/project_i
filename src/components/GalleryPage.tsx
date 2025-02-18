@@ -3,6 +3,7 @@ import { FileDataTypes } from "../../types/gallery";
 import GalleryGrid from "./GalleryGrid";
 import FullScreenView from "./FullScreenView";
 import { getFilesFromTi } from "@/lib/Firebase";
+import TypingText from "./customComponents/TypingText";
 
 type GalleryPageProps = {
   isLocked: boolean;
@@ -66,7 +67,11 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Gallery</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold mb-8">Gallery</h1>
+        {/* <h3 className="text-sm  font-bold mb-8">Ishana Parween</h3> */}
+        <TypingText text="💖 Ishana Parween" className="w-[195px] " />
+        </div>
       <GalleryGrid items={files} onItemClick={handleItemClick} />
       {selectedItem && (
         <FullScreenView
