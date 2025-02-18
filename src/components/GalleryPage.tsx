@@ -67,9 +67,9 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold mb-8">Gallery</h1>
-        {/* <h3 className="text-sm  font-bold mb-8">Ishana Parween</h3> */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold ">Project-i</h1>
+       
         <TypingText text="💖 Ishana Parween" className="w-[195px] " />
         </div>
       <GalleryGrid items={files} onItemClick={handleItemClick} />
