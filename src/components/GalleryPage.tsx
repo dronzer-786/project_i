@@ -17,7 +17,7 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
     const fetchFiles = async () => {
       try {
         const filesData = await getFilesFromTi();
-        console.log({ filesData });
+    
         setFiles(filesData);
       } catch (error) {
         console.error("Error fetching files:", error);
