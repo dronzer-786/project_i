@@ -1,5 +1,3 @@
-
-
 import { FileDataTypes } from "../../types/gallery"
 
 interface GalleryGridProps {
@@ -31,7 +29,9 @@ export default function GalleryGrid({ items, onItemClick }: GalleryGridProps) {
               <video src={item.url} className="w-full h-full object-cover rounded-lg absolute inset-0 opacity-50" />
             </div>
           )}
-          <p className="mt-2 text-sm font-medium">{item.name}</p>
+          <p className="mt-2 text-sm font-medium truncate">
+            {item.name.length > 20 ? `${item.name.slice(0, 20)}...` : item.name}
+          </p>
         </div>
       ))}
     </div>
