@@ -3,11 +3,13 @@ import { FileDataTypes } from "../../types/gallery";
 import GalleryGrid from "./GalleryGrid";
 import FullScreenView from "./FullScreenView";
 import { getFilesFromTi } from "@/lib/Firebase";
-import TypingText from "./customComponents/TypingText";
 
+import { Mogra } from "next/font/google";
+import { WordRotate } from "./customComponents/WordRotate";
 type GalleryPageProps = {
   isLocked: boolean;
 };
+const mogra = Mogra({ subsets: ["latin"], weight: ["400"] });
 
 function GalleryPage({ isLocked }: GalleryPageProps) {
   const [selectedItem, setSelectedItem] = useState<FileDataTypes | null>(null);
@@ -17,7 +19,7 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
     const fetchFiles = async () => {
       try {
         const filesData = await getFilesFromTi();
-    
+
         setFiles(filesData);
       } catch (error) {
         console.error("Error fetching files:", error);
@@ -28,15 +30,6 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
 
     fetchFiles();
   }, []);
-
-  const handleItemClick = (item: FileDataTypes) => {
-    setSelectedItem({
-      fullPath: item.name || "",
-   
-      url: item.url || "",
-      name: item.name || "",
-    });
-  };
 
   if (isLocked) return <div>Gallery is locked</div>;
 
@@ -66,19 +59,31 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold ">Project-i</h1>
-       
-        <TypingText text="💖 Ishana Parween" className="w-[195px] " />
+    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+
+      <div className="container mx-auto px-4 py-8 z-50">
+        <div className="flex items-center justify-between mb-8">
+          <h1
+            className={`${mogra.className} text-4xl  font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text`}
+          >
+            Project-i
+          </h1>
+          {/* <TypingText text="💖 Ishana Parween" className="w-[195px]" /> */}
+          <WordRotate
+            className="text-xl font-bold text-primary font-mono dark:text-white"
+            words={["ISHANA", "PARWEEN", "💖💖💖"]}
+          />
         </div>
-      <GalleryGrid items={files} onItemClick={handleItemClick} />
-      {selectedItem && (
-        <FullScreenView
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
-      )}
+        <GalleryGrid items={files} onItemClick={setSelectedItem} />
+        {selectedItem && (
+          <FullScreenView
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+            open={!!selectedItem}
+          />
+        )}
+      </div>
     </div>
   );
 }
