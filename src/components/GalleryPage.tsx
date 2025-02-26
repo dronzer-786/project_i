@@ -9,7 +9,7 @@ import { WordRotate } from "./customComponents/WordRotate";
 type GalleryPageProps = {
   isLocked: boolean;
 };
-const mogra = Mogra({ subsets: ["latin"], weight: ["400"] });
+export const mogra = Mogra({ subsets: ["latin"], weight: ["400"] });
 
 function GalleryPage({ isLocked }: GalleryPageProps) {
   const [selectedItem, setSelectedItem] = useState<FileDataTypes | null>(null);
