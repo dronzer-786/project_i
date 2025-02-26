@@ -1,55 +1,117 @@
+"use client";
 
-import VideoPlayer from "./VideoPlayer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { FileDataTypes } from "../../types/gallery";
+import VideoPlayer from "./VideoPlayer";
+import { Maximize2, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import DeletePhotoBtn from "./customComponents/DeletePhotoBtn";
 
 interface FullScreenViewProps {
   item: FileDataTypes;
   onClose: () => void;
+  open: boolean;
 }
 
-export default function FullScreenView({ item, onClose }: FullScreenViewProps) {
-  const handleDownload = () => {
-    const link = document.createElement("a");
-    link.href = item.url;
-    link.download = item.name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+export default function FullScreenView({
+  item,
+  onClose,
+  open,
+}: FullScreenViewProps) {
+  const handleDownload = async () => {
+    try {
+      // Try fetch method first with appropriate options
+      const response = await fetch(item.url, {
+        credentials: "include", // Include credentials if needed
+        headers: {
+          Accept: "application/json, text/plain, */*",
+        },
+      });
+
+      if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = item.name;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.warn("Fetch download failed, trying direct download:", error);
+      // Fallback to direct download
+      const link = document.createElement("a");
+      link.href = item.url;
+      link.download = item.name;
+      link.target = "_blank"; // Open in new tab if download fails
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleFullScreen = () => {
+    const element = document.querySelector(".media-container");
+    if (element) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        element.requestFullscreen();
+      }
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-      <div className="max-w-4xl w-full p-4">
-        <div className="bg-white rounded-lg overflow-hidden">
-          <div className="p-4 flex justify-between items-center">
-            <h2 className="text-xl font-bold">{item.name}</h2>
-            <button onClick={onClose} className="text-2xl">
-              &times;
-            </button>
-          </div>
-          <div className="relative aspect-video">
-            {item.name.includes(".png") ||
-            item.name.includes(".jpg") ||
-            item.name.includes(".jpeg") ? (
-              <img
-                src={item.url || "/placeholder.svg"}
-                alt={item.name}
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <VideoPlayer src={item.url} />
-            )}
-          </div>
-          <div className="p-4">
-            <button
-              onClick={handleDownload}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-            >
-              Download
-            </button>
-          </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl w-full">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">
+            {item.name.length > 20 ? `${item.name.slice(0, 20)}...` : item.name}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="relative aspect-video media-container">
+          {item.name.includes(".png") ||
+          item.name.includes(".jpg") ||
+          item.name.includes(".jpeg") ? (
+            <img
+              src={item.url || "/placeholder.svg"}
+              alt={item.name}
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <VideoPlayer src={item.url} />
+          )}
         </div>
-      </div>
-    </div>
+
+        <div className="flex justify-center sm:justify-end gap-2">
+          <Button
+            onClick={handleDownload}
+            variant="outline"
+            size="sm"
+            className="sm:flex hidden"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download
+          </Button>
+          <Button onClick={handleFullScreen} variant="default" size="sm">
+            <Maximize2 className="h-4 w-4 mr-2" />
+            Fullscreen
+          </Button>
+
+          <DeletePhotoBtn />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
