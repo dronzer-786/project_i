@@ -83,7 +83,7 @@ export default function FullScreenView({
         <div className="relative aspect-video media-container">
           {item.name.includes(".png") ||
           item.name.includes(".jpg") ||
-          item.name.includes(".jpeg") ? (
+          item.name.includes(".jpeg") || item.name.includes(".JPG") ? (
             <img
               src={item.url || "/placeholder.svg"}
               alt={item.name}

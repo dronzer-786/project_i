@@ -1,6 +1,6 @@
 
 import { initializeApp } from 'firebase/app';
-import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, listAll, getDownloadURL, uploadBytes } from 'firebase/storage';
 
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -39,5 +39,16 @@ async function getFilesFromTi() {
         throw error;
     }
 }
+ async function handleFirebaseImageUpload (file:File) {
 
-export { storage, getFilesFromTi };
+    const storageRef = ref(storage, `ti/${file.name}`);
+        await uploadBytes(storageRef, file);
+    const res =  await getDownloadURL(storageRef);
+    return {
+      success: true,
+      file: {
+        url: res,
+      },
+    }
+  };
+export { storage, getFilesFromTi, handleFirebaseImageUpload };

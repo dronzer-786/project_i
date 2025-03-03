@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { mogra } from "../GalleryPage";
 
-
-
 interface Sparkle {
   id: string;
   x: string;
@@ -96,7 +94,7 @@ const SparklesText: React.FC<SparklesTextProps> = ({
           } else {
             return { ...star, lifespan: star.lifespan - 0.1 };
           }
-        }),
+        })
       );
     };
 
@@ -108,7 +106,7 @@ const SparklesText: React.FC<SparklesTextProps> = ({
 
   return (
     <div
-      className={cn("text-5xl sm:text-9xl font-bold", className)}
+      className={cn(" font-bold", className)}
       {...props}
       style={
         {
@@ -121,7 +119,12 @@ const SparklesText: React.FC<SparklesTextProps> = ({
         {sparkles.map((sparkle) => (
           <Sparkle key={sparkle.id} {...sparkle} />
         ))}
-        <strong className={`${mogra.className} font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text`}>{text}</strong>
+        <strong
+          className={`${mogra.className} font-bold bg-gradient-to-r from-gray-500 via-gray-700 to-black
+ text-transparent bg-clip-text`}
+        >
+          {text}
+        </strong>
       </span>
     </div>
   );

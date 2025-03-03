@@ -5,7 +5,9 @@ import FullScreenView from "./FullScreenView";
 import { getFilesFromTi } from "@/lib/Firebase";
 
 import { Mogra } from "next/font/google";
-import { WordRotate } from "./customComponents/WordRotate";
+
+import ImageUpload from "./customComponents/ImageUpload";
+import { SparklesText } from "./customComponents/SparkleText";
 type GalleryPageProps = {
   isLocked: boolean;
 };
@@ -64,16 +66,8 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
 
       <div className="container mx-auto px-4 py-8 z-50">
         <div className="flex items-center justify-between mb-8">
-          <h1
-            className={`${mogra.className} text-4xl  font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text`}
-          >
-            Project-i
-          </h1>
-          {/* <TypingText text="💖 Ishana Parween" className="w-[195px]" /> */}
-          <WordRotate
-            className="text-xl font-bold text-primary font-mono dark:text-white"
-            words={["ISHANA", "PARWEEN", "💖💖💖"]}
-          />
+        <SparklesText text="Project - i" className=" text-3xl sm:text-4xl" sparklesCount={8}/>
+        <ImageUpload/>
         </div>
         <GalleryGrid items={files} onItemClick={setSelectedItem} />
         {selectedItem && (
