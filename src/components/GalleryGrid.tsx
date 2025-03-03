@@ -14,7 +14,7 @@ export default function GalleryGrid({ items, onItemClick }: GalleryGridProps) {
           className="cursor-pointer hover:opacity-80 transition-opacity"
           onClick={() => onItemClick(item)}
         >
-          {item.name.includes(".png") || item.name.includes(".jpg") || item.name.includes(".jpeg") ? (
+          {item.name.includes(".png") || item.name.includes(".jpg") || item.name.includes(".jpeg") || item.name.includes(".JPG") ? (
             <img
               src={item.url}
               alt={item.name}

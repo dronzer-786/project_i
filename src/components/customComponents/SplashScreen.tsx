@@ -42,7 +42,7 @@ export default function SplashScreen() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <SparklesText text="Project - i"  sparklesCount={20}/>
+        <SparklesText text="Project - i" className="text-5xl sm:text-9xl"  sparklesCount={20}/>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
