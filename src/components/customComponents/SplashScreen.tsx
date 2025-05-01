@@ -50,11 +50,11 @@ export default function SplashScreen() {
           className="mt-12 text-center"
         >
           <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 bg-black rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-            <div className="w-2 h-2 bg-black rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-            <div className="w-2 h-2 bg-black rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-primary/70 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-2 h-2 bg-primary/70 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-2 h-2 bg-primary/70 rounded-full animate-bounce"></div>
           </div>
-          <p className="text-black mt-2 text-sm">Getting ready, please wait...</p>
+          <p className="text-primary font-serif mt-4 text-sm">Getting ready, please wait...</p>
         </motion.div>
       </motion.div>
     </motion.div>

@@ -64,7 +64,7 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
     <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
 
-      <div className="container mx-auto px-4 py-8 z-50">
+      <div className="container mx-auto px-4 py-2 sm:py-8 z-50">
         <div className="flex items-center justify-between mb-8">
         <SparklesText text="Project - i" className=" text-3xl sm:text-4xl" sparklesCount={8}/>
         <ImageUpload/>
