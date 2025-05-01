@@ -1,9 +1,10 @@
 "use client";
 import React from "react";
 import { InputOTPGroup, InputOTP, InputOTPSlot } from "../ui/input-otp";
-import bcrypt from "bcryptjs";
 import { toast } from "sonner";
-
+import { BackgroundLines } from "./BackgroundLines";
+import axios from 'axios'
+import {UAParser} from "ua-parser-js";
 type HomeLockBoxProps = {
   isLocked: boolean;
   setIsLocked: (isLocked: boolean) => void;
@@ -11,50 +12,42 @@ type HomeLockBoxProps = {
 function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
   const [value, setValue] = React.useState("");
   const [isVerifying, setIsVerifying] = React.useState(false);
-
-
+  const parser = new UAParser();
+  const result = parser.getResult();
   const verifyOTP = async (inputValue: string) => {
     try {
-      if (
-        !process.env.NEXT_PUBLIC_HASHED_PASSWORD ||
-        !process.env.NEXT_PUBLIC_PEPPER
-      ) {
-        throw new Error("Missing environment variables");
-      }
-
       setIsVerifying(true);
       const loadingToast = toast.loading("Checking access code...", {
         duration: Infinity,
       });
-
-      const pepperedInput = inputValue + process.env.NEXT_PUBLIC_PEPPER;
-
-      // Decode the stored hash before comparing
-      const decodedHash = Buffer.from(
-        process.env.NEXT_PUBLIC_HASHED_PASSWORD,
-        "base64"
-      ).toString();
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const isMatch = await bcrypt.compare(pepperedInput, decodedHash);
-
+  
+      const res = await axios.post('/api/verify', {
+        code: inputValue,
+      });
+  
       toast.dismiss(loadingToast);
-
-      if (isMatch) {
-        toast.success("Access granted! Redirecting...");
+  
+      if (res.status === 200) {
+        toast.success("Access granted!");
+        console.log("Device Type:", result.device.type);       // e.g., "mobile"
+console.log("Device Vendor:", result.device.vendor);   // e.g., "Apple", "Samsung"
+console.log("Device Model:", result.device.model);     // e.g., "iPhone", "SM-G950F"
+console.log("OS Name:", result.os.name);               // e.g., "iOS", "Android"
+console.log("OS Version:", result.os.version);         // e.g., "16.4.1"
+console.log("Browser:", result.browser.name, result.browser.version);
         setIsLocked(false);
       } else {
         toast.error("Invalid access code");
         setValue("");
       }
     } catch (error) {
-      console.error("Verification error:", error);
-      toast.error("An error occurred during verification");
+      toast.error("An error occurred" + error);
       setValue("");
     } finally {
       setIsVerifying(false);
     }
   };
+  
 
   // Watch for complete OTP entry
   React.useEffect(() => {
@@ -66,7 +59,7 @@ function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
   return (
     <main className="min-h-screen w-full flex items-center justify-center">
       <div className="w-full max-w-3xl px-4">
-        <div className="flex flex-col items-center justify-center space-y-8">
+        <BackgroundLines className="flex flex-col items-center justify-center space-y-8">
           <InputOTP
             maxLength={4}
             value={value}
@@ -99,7 +92,7 @@ function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
               <>Checking access code...</>
             )}
           </div>
-        </div>
+        </BackgroundLines>
       </div>
     </main>
   );
