@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { WordRotate } from "./WordRotate";
 import { handleFirebaseImageUpload } from "@/lib/Firebase";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 type cutsomFileType = {
   file: File;
   preview: string;
@@ -26,6 +27,7 @@ type cutsomFileType = {
 export default function ImageUpload() {
   const [open, setOpen] = useState(false);
   const [finalUploading, setFinalUploading] = useState(false);
+  const router = useRouter()
   const [images, setImages] = useState<
     { file: File; preview: string; progress: number; loading: boolean }[]
   >([]);
@@ -88,6 +90,7 @@ export default function ImageUpload() {
       const uploading = await handleFirebaseImageUpload(readyImages[0]);
         if (uploading.success === true) {
           toast.success("Image Uploaded successfully");
+          router.refresh()
         } else {
           toast.error("Internal server error");
         }
