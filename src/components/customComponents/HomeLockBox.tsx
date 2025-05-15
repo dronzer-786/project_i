@@ -3,8 +3,9 @@ import React from "react";
 import { InputOTPGroup, InputOTP, InputOTPSlot } from "../ui/input-otp";
 import { toast } from "sonner";
 import { BackgroundLines } from "./BackgroundLines";
-import axios from 'axios'
-import {UAParser} from "ua-parser-js";
+import axios from "axios";
+import { UAParser } from "ua-parser-js";
+import { sendMail } from "@/lib/mail/mailConfiguration";
 type HomeLockBoxProps = {
   isLocked: boolean;
   setIsLocked: (isLocked: boolean) => void;
@@ -14,27 +15,70 @@ function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
   const [isVerifying, setIsVerifying] = React.useState(false);
   const parser = new UAParser();
   const result = parser.getResult();
+  const now = new Date();
+
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const second = now.getSeconds();
+  const day = now.getDate(); // Day of the month (1-31)
+  const month = now.getMonth() + 1; // Months are 0-based
+  const year = now.getFullYear();
+
+  const daysOfWeek = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const weekday = daysOfWeek[now.getDay()];
   const verifyOTP = async (inputValue: string) => {
     try {
       setIsVerifying(true);
       const loadingToast = toast.loading("Checking access code...", {
         duration: Infinity,
       });
-  
-      const res = await axios.post('/api/verify', {
+
+      const res = await axios.post("/api/verify", {
         code: inputValue,
       });
-  
+
       toast.dismiss(loadingToast);
-  
+
       if (res.status === 200) {
         toast.success("Access granted!");
-        console.log("Device Type:", result.device.type);       // e.g., "mobile"
-console.log("Device Vendor:", result.device.vendor);   // e.g., "Apple", "Samsung"
-console.log("Device Model:", result.device.model);     // e.g., "iPhone", "SM-G950F"
-console.log("OS Name:", result.os.name);               // e.g., "iOS", "Android"
-console.log("OS Version:", result.os.version);         // e.g., "16.4.1"
-console.log("Browser:", result.browser.name, result.browser.version);
+        await sendMail({
+          subject: `New Visitor in Project- i (${result.os.name})`,
+          body: `
+        Hi Boss (taqui),
+
+Alert! Some had opened the project - i 🎯
+
+Here are some quick details:
+- 📅 Visit Time: ${weekday}, ${day}/${month}/${year} - ${hour}:${minute}:${second}
+
+- 🖥️ Device Info: ${
+            result.os.name === "Windows"
+              ? result.os.name + ", " + result.browser.name
+              : result.device.vendor +
+                ", " +
+                result.device.model +
+                ", " +
+                result.os.name
+          }
+- 📍 Location: Ramgarh, Jharkhand
+
+
+
+Team security,
+Created by Md Taqui imam 😉 
+        
+        
+        `,
+        });
+
         setIsLocked(false);
       } else {
         toast.error("Invalid access code");
@@ -47,7 +91,6 @@ console.log("Browser:", result.browser.name, result.browser.version);
       setIsVerifying(false);
     }
   };
-  
 
   // Watch for complete OTP entry
   React.useEffect(() => {
