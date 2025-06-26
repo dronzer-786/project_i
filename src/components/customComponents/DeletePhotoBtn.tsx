@@ -52,8 +52,8 @@ export default function DeletePhotoBtn() {
           size="sm"
           className="relative overflow-hidden bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all duration-300"
         >
-          <Trash2 className="mr-2 h-5 w-5" />
-          Delete Photo
+          <Trash2 className="md:mr-2 h-5 w-5" />
+          <span className="hidden md:block">Delete Photo</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] min-h-[300px] sm:min-h-[400px] p-0 overflow-hidden">
