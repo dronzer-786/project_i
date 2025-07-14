@@ -33,7 +33,6 @@ export default async function SecurePage({ params }: PageProps) {
 
   return (
     <div className="">
-      <h1 className="">Gallery Page</h1>
       <GalleryPage />
 
       {/* Client-side protection against refresh */}
