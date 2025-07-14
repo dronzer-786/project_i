@@ -20,6 +20,7 @@ export default async function SecurePage({ params }:  PageProps) {
 
 const myToken = (await params).token
 
+
   const validation = statelessTokenManager.validateOneTimeToken(
         myToken,
         ipAddress,
