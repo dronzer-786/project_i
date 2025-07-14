@@ -1,6 +1,6 @@
-import HomePage from "@/components/HomePage";
+import HomeLockBox from "@/components/customComponents/HomeLockBox";
 
 
 export default function Home() {
-  return <HomePage />;
+  return <HomeLockBox />;
 }

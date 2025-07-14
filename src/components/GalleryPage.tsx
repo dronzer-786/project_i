@@ -1,19 +1,18 @@
+'use client'
 import React, { useEffect, useState } from "react";
 import { FileDataTypes } from "../../types/gallery";
 import GalleryGrid from "./GalleryGrid";
-import FullScreenView from "./FullScreenView";
 import { getFilesFromTi } from "@/lib/Firebase";
 
 import { Mogra } from "next/font/google";
 
 import ImageUpload from "./customComponents/ImageUpload";
 import { SparklesText } from "./customComponents/SparkleText";
-type GalleryPageProps = {
-  isLocked: boolean;
-};
+import FullScreenView from "./FullScreenView";
+
 export const mogra = Mogra({ subsets: ["latin"], weight: ["400"] });
 
-function GalleryPage({ isLocked }: GalleryPageProps) {
+function GalleryPage() {
   const [selectedItem, setSelectedItem] = useState<FileDataTypes | null>(null);
   const [files, setFiles] = useState<FileDataTypes[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +32,6 @@ function GalleryPage({ isLocked }: GalleryPageProps) {
     fetchFiles();
   }, []);
 
-  if (isLocked) return <div>Gallery is locked</div>;
 
   if (loading) {
     return (

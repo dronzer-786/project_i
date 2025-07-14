@@ -6,16 +6,15 @@ import { BackgroundLines } from "./BackgroundLines";
 import axios from "axios";
 import { UAParser } from "ua-parser-js";
 import { sendMail } from "@/lib/mail/mailConfiguration";
-type HomeLockBoxProps = {
-  isLocked: boolean;
-  setIsLocked: (isLocked: boolean) => void;
-};
-function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
+import { useRouter } from "next/navigation";
+
+function HomeLockBox() {
   const [value, setValue] = React.useState("");
   const [isVerifying, setIsVerifying] = React.useState(false);
   const parser = new UAParser();
   const result = parser.getResult();
   const now = new Date();
+  const router = useRouter();
 
   const hour = now.getHours();
   const minute = now.getMinutes();
@@ -48,10 +47,15 @@ function HomeLockBox({ isLocked, setIsLocked }: HomeLockBoxProps) {
       toast.dismiss(loadingToast);
 
       if (res.status === 200) {
-        toast.success("Access granted!");
-        await sendMail({
-          subject: `New Visitor in Project- i (${result.os.name})`,
-          body: `
+        router.push(`/s/${res.data.redirectUrl}`);
+        // toast.success("Access granted!");
+        if (
+          result.os.name !== "Windows" &&
+          result.device.vendor !== undefined
+        ) {
+          await sendMail({
+            subject: `New Visitor in Project- i (${result.os.name})`,
+            body: `
         Hi Boss (taqui),
 
 Alert! Some had opened the project - i 🎯
@@ -60,14 +64,14 @@ Here are some quick details:
 - 📅 Visit Time: ${weekday}, ${day}/${month}/${year} - ${hour}:${minute}:${second}
 
 - 🖥️ Device Info: ${
-            result.os.name === "Windows"
-              ? result.os.name + ", " + result.browser.name
-              : result.device.vendor +
-                ", " +
-                result.device.model +
-                ", " +
-                result.os.name
-          }
+              result.os.name === "Windows"
+                ? result.os.name + ", " + result.browser.name
+                : result.device.vendor +
+                  ", " +
+                  result.device.model +
+                  ", " +
+                  result.os.name
+            }
 - 📍 Location: Ramgarh, Jharkhand
 
 
@@ -77,9 +81,8 @@ Created by Md Taqui imam 😉
         
         
         `,
-        });
-
-        setIsLocked(false);
+          });
+        }
       } else {
         toast.error("Invalid access code");
         setValue("");
@@ -98,7 +101,6 @@ Created by Md Taqui imam 😉
       verifyOTP(value);
     }
   }, [value]);
-  if (!isLocked) return null;
   return (
     <main className="min-h-screen w-full flex items-center justify-center">
       <div className="w-full max-w-3xl px-4">
@@ -126,14 +128,12 @@ Created by Md Taqui imam 😉
               ))}
             </InputOTPGroup>
           </InputOTP>
-          <div className="text-center text-lg md:text-xl">
+          <div className="text-center font-mono text-lg md:text-xl">
             {isVerifying ? (
               <>Verifying...</>
             ) : value === "" ? (
               <>Enter your access code.</>
-            ) : (
-              <>Checking access code...</>
-            )}
+            ) : ''}
           </div>
         </BackgroundLines>
       </div>
