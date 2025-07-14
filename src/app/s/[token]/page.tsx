@@ -19,6 +19,7 @@ const myToken = (await params).token
     ipAddress,
     userAgent
   );
+  console.log(ipAddress. userAgent)
 
   if (!validation.valid) {
     redirect("/"); // Redirect to login
