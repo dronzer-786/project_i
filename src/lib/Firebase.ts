@@ -4,8 +4,8 @@ import {
   ref,
   listAll,
   getDownloadURL,
-  uploadBytes,
   getMetadata,
+  uploadBytesResumable,
 } from "firebase/storage";
 
 const firebaseConfig = {
@@ -34,8 +34,6 @@ async function getFilesFromTi() {
           getMetadata(itemRef),
         ]);
 
-        console.log({ itemRef, metadata });
-
         return {
           name: itemRef.name,
           url: url,
@@ -58,15 +56,92 @@ async function getFilesFromTi() {
   }
 }
 
-async function handleFirebaseImageUpload(file: File) {
-  const storageRef = ref(storage, `ti/${file.name}`);
-  await uploadBytes(storageRef, file);
-  const res = await getDownloadURL(storageRef);
-  return {
-    success: true,
-    file: {
-      url: res,
-    },
+async function handleFirebaseImageUpload(
+  files: File[],
+  onProgress?: (fileIndex: number, progress: number) => void,
+  onOverallProgress?: (overall: number) => void
+) {
+  const progressArray = new Array(files.length).fill(0);
+  
+  // Helper function to update overall progress
+  const updateOverallProgress = () => {
+    const overall = progressArray.reduce((sum, p) => sum + p, 0) / files.length;
+    onOverallProgress?.(overall);
   };
+
+  const uploadPromises = files.map((file, index) => {
+    const storageRef = ref(storage, `ti/${Date.now()}_${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          
+          // Update individual progress
+          onProgress?.(index, progress);
+          
+          // Update overall progress in real-time
+          progressArray[index] = progress;
+          updateOverallProgress();
+        },
+        (error) => {
+          progressArray[index] = 0;
+          updateOverallProgress();
+          
+          reject({
+            success: false,
+            error: error.message,
+            fileName: file.name,
+            fileIndex: index,
+          });
+        },
+        async () => {
+          try {
+            const url = await getDownloadURL(uploadTask.snapshot.ref);
+            
+            progressArray[index] = 100;
+            updateOverallProgress();
+            
+            resolve({
+              success: true,
+              file: {
+                url,
+                name: file.name,
+              },
+              fileIndex: index,
+            });
+          } catch (error) {
+            progressArray[index] = 0;
+            updateOverallProgress();
+            
+            reject({
+              success: false,
+              error: error,
+              fileName: file.name,
+              fileIndex: index,
+            });
+          }
+        }
+      );
+    });
+  });
+
+  return Promise.allSettled(uploadPromises).then(results => 
+    results.map((result, index) => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      } else {
+        return {
+          success: false,
+          error: result.reason.error || result.reason.message || 'Unknown error',
+          fileName: files[index].name,
+          fileIndex: index,
+        };
+      }
+    })
+  );
 }
+
 export { storage, getFilesFromTi, handleFirebaseImageUpload };
