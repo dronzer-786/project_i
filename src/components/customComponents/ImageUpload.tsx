@@ -104,7 +104,7 @@ export default function ImageUpload() {
         setIsUploading(false);
         setIsComplete(true);
         toast.success("Image Uploaded successfully");
-        router.refresh();
+        router.push('/');
       } else {
         toast.error("Internal server error");
       }
