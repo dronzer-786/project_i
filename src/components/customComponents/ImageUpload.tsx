@@ -204,7 +204,7 @@ export default function ImageUpload() {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     className="hidden"
-                    accept="image/*"
+                   accept="image/*,video/*"
                     multiple
                   />
                 </div>
