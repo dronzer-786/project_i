@@ -27,7 +27,7 @@ function uploadSingleFileWithProgress(
   fileIndex: number,
   onProgress?: (fileIndex: number, progress: number) => void
 ): Promise<UploadResult> {
-  return new Promise((resolve, reject) => {
+  return new Promise<UploadResult>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const formData = new FormData();
     formData.append("file", file);
