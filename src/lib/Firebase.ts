@@ -1,59 +1,87 @@
-import { initializeApp } from "firebase/app";
-import {
-  getStorage,
-  ref,
-  listAll,
-  getDownloadURL,
-  getMetadata,
-  uploadBytesResumable,
-} from "firebase/storage";
-
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: "chatmedia786.firebaseapp.com",
-  projectId: "chatmedia786",
-  storageBucket: "chatmedia786.appspot.com",
-  messagingSenderId: "982442102270",
-  appId: "1:982442102270:web:10f10383c7138ae355c4af",
-  measurementId: "G-N0Q8JFYFVE",
-};
-
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+type UploadResult =
+  | {
+      success: true;
+      file: { url: string; name: string; fullPath?: string };
+      fileIndex: number;
+    }
+  | {
+      success: false;
+      error: string;
+      fileName: string;
+      fileIndex: number;
+    };
 
 async function getFilesFromTi() {
-  try {
-    const tiRef = ref(storage, "ti");
-    const result = await listAll(tiRef);
+  const response = await fetch("/api/storage/ti", { method: "GET" });
 
-    // Get download URLs and metadata for all items
-    const files = await Promise.all(
-      result.items.map(async (itemRef) => {
-        const [url, metadata] = await Promise.all([
-          getDownloadURL(itemRef),
-          getMetadata(itemRef),
-        ]);
-
-        return {
-          name: itemRef.name,
-          url: url,
-          fullPath: itemRef.fullPath,
-          // Upload time and date info
-          timeCreated: metadata.timeCreated,
-          updated: metadata.updated,
-          // File size
-          size: metadata.size,
-          // Content type (mime type)
-          contentType: metadata.contentType,
-        };
-      })
-    );
-
-    return files;
-  } catch (error) {
-    console.error("Error getting files from /ti:", error);
-    throw error;
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to fetch files");
   }
+
+  return response.json();
+}
+
+function uploadSingleFileWithProgress(
+  file: File,
+  fileIndex: number,
+  onProgress?: (fileIndex: number, progress: number) => void
+): Promise<UploadResult> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
+    formData.append("file", file);
+
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) {
+        return;
+      }
+      const progress = (event.loaded / event.total) * 100;
+      onProgress?.(fileIndex, progress);
+    };
+
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState !== XMLHttpRequest.DONE) {
+        return;
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const payload = JSON.parse(xhr.responseText) as {
+            success: true;
+            file: { url: string; name: string; fullPath?: string };
+          };
+          resolve({
+            success: true,
+            file: payload.file,
+            fileIndex,
+          });
+        } catch {
+          reject(new Error("Invalid upload response"));
+        }
+      } else {
+        let errorMessage = "Upload failed";
+        try {
+          const payload = JSON.parse(xhr.responseText) as { error?: string };
+          if (payload.error) {
+            errorMessage = payload.error;
+          }
+        } catch {
+          // Ignore JSON parse errors here and keep default message.
+        }
+        reject(new Error(errorMessage));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Network error while uploading"));
+    xhr.open("POST", "/api/storage/upload");
+    xhr.send(formData);
+  }).catch((error: unknown) => ({
+    success: false,
+    error: error instanceof Error ? error.message : "Unknown error",
+    fileName: file.name,
+    fileIndex,
+  }));
 }
 
 async function handleFirebaseImageUpload(
@@ -61,87 +89,34 @@ async function handleFirebaseImageUpload(
   onProgress?: (fileIndex: number, progress: number) => void,
   onOverallProgress?: (overall: number) => void
 ) {
+  if (files.length === 0) {
+    return [];
+  }
+
   const progressArray = new Array(files.length).fill(0);
-  
-  // Helper function to update overall progress
+
   const updateOverallProgress = () => {
     const overall = progressArray.reduce((sum, p) => sum + p, 0) / files.length;
     onOverallProgress?.(overall);
   };
 
-  const uploadPromises = files.map((file, index) => {
-    const storageRef = ref(storage, `ti/${Date.now()}_${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    return new Promise((resolve, reject) => {
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          
-          // Update individual progress
-          onProgress?.(index, progress);
-          
-          // Update overall progress in real-time
-          progressArray[index] = progress;
-          updateOverallProgress();
-        },
-        (error) => {
-          progressArray[index] = 0;
-          updateOverallProgress();
-          
-          reject({
-            success: false,
-            error: error.message,
-            fileName: file.name,
-            fileIndex: index,
-          });
-        },
-        async () => {
-          try {
-            const url = await getDownloadURL(uploadTask.snapshot.ref);
-            
-            progressArray[index] = 100;
-            updateOverallProgress();
-            
-            resolve({
-              success: true,
-              file: {
-                url,
-                name: file.name,
-              },
-              fileIndex: index,
-            });
-          } catch (error) {
-            progressArray[index] = 0;
-            updateOverallProgress();
-            
-            reject({
-              success: false,
-              error: error,
-              fileName: file.name,
-              fileIndex: index,
-            });
-          }
-        }
-      );
-    });
-  });
-
-  return Promise.allSettled(uploadPromises).then(results => 
-    results.map((result, index) => {
-      if (result.status === 'fulfilled') {
-        return result.value;
+  const uploadPromises = files.map((file, index) =>
+    uploadSingleFileWithProgress(file, index, (fileIndex, progress) => {
+      onProgress?.(fileIndex, progress);
+      progressArray[fileIndex] = progress;
+      updateOverallProgress();
+    }).then((result) => {
+      if (result.success) {
+        progressArray[index] = 100;
       } else {
-        return {
-          success: false,
-          error: result.reason.error || result.reason.message || 'Unknown error',
-          fileName: files[index].name,
-          fileIndex: index,
-        };
+        progressArray[index] = 0;
       }
+      updateOverallProgress();
+      return result;
     })
   );
+
+  return Promise.all(uploadPromises);
 }
 
-export { storage, getFilesFromTi, handleFirebaseImageUpload };
+export { getFilesFromTi, handleFirebaseImageUpload };
